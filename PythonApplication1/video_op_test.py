@@ -1,107 +1,92 @@
-ï»¿import numpy as np
+import numpy as np
 import cv2
 import time
+
+#from numpy.core.arrayprint import printoptions
 #from geometry_msgs.msg import Twist
 #import rospy
 
-def getZeroTwist():
-    #åˆå§‹åŒ–
-    t = Twist()
-    t.linear.x = 0
-    t.linear.y = 0
-    t.linear.z = 0
-    t.angular.x = 0
-    t.angular.y = 0
-    t.angular.z = 0
-    return t
-
-def publ(m_cmd):
-    #move_cmd = getZeroTwist()
-    distance = 1e-5
-    x=np.floor(m_cmd[1]*100)
-    y=np.floor(m_cmd[2]*100)
-    xi = np.abs(x)+1
-    yi = np.abs(y)/xi
-    # print(xi)
-    while (xi-1):
-        xi -=1
-        ma= np.sign(x)*distance
-        mb = yi*np.sign(y)*distance
-        #move_cmd.linear.x = np.sign(x)*distance
-        #move_cmd.linear.y = yi*np.sign(y)*distance
-        # print(move_cmd.linear.x)
-        # print(move_cmd.linear.y)
-        #vel_pub.publish(move_cmd)
-    
-
-def Image(sourceDir):
-
-	# è¯»å–å›¾ç‰‡
-	img = sourceDir
-	# ç°åº¦åŒ–
-	gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-	# é«˜æ–¯æ¨¡ç³Šå¤„ç†:å»å™ª(æ•ˆæœæœ€å¥½)
-	blur = cv2.GaussianBlur(gray, (9, 9), 0)
-
-	# Sobelè®¡ç®—XYæ–¹å‘æ¢¯åº¦
-	gradX = cv2.Sobel(blur, ddepth=cv2.CV_32F, dx=1, dy=0)
-	gradY = cv2.Sobel(blur, ddepth=cv2.CV_32F, dx=0, dy=1)
-	# è®¡ç®—æ¢¯åº¦å·®
-	gradient = cv2.subtract(gradX, gradY)
-	#ç»å¯¹å€¼
-	gradient = cv2.convertScaleAbs(gradient)
-	#é«˜æ–¯æ¨¡ç³Šå¤„ç†ï¼šå»å™ª
-	blured = cv2.GaussianBlur(gradient, (9, 9), 0)
-
-	# äºŒå€¼åŒ–
-	_ , dst = cv2.threshold(blured, 30, 255, cv2.THRESH_BINARY) #90ä¸ºåˆ†ç•Œ
-	# æ»‘åŠ¨çª—å£
-	kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (107, 76))
-	# å½¢æ€å­¦å¤„ç†:å½¢æ€é—­å¤„ç†(è…èš€)
-	closed = cv2.morphologyEx(dst, cv2.MORPH_CLOSE, kernel)
-	# è…èš€ä¸è†¨èƒ€è¿­ä»£
-	closed = cv2.erode(closed, None, iterations=3)
-	closed = cv2.dilate(closed, None, iterations=3)
-	cv2.imshow("Box", closed)
-	# è·å–è½®å»“,
-	cnts,he= cv2.findContours(closed.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-	#print(len(cnts))
-	try:
-		c = sorted(cnts, key=cv2.contourArea, reverse=True)[0]
-	except:
-		return
-	#æ¡†å‡ºæœ€å°é•¿æ–¹å½¢
-	rect = cv2.minAreaRect(c)
-	#print(rect[0])#center of rect
-	cmd = displacement(rect)
-	# print(cmd)
-	box = np.int0(cv2.boxPoints(rect))
-
-	draw_img = cv2.drawContours(img.copy(), [box], -1, (0, 0, 255), 3)
-	cv2.imshow("Box", draw_img)
-
 def cap_video():
-    cap = cv2.VideoCapture(0) #æ¥é€šå0ä¸ºusbæ‘„åƒå¤´
+    cap = cv2.VideoCapture(0) #½ÓÍ¨ºó0ÎªusbÉãÏñÍ· #¸Ä½ø£ºVideoCapture¿ÉÒÔ¿ØÖÆÖ¡ÊıÂğ£¿¶ÔÊµÏÖÊ±¼äÓĞºÜ´óÓ°ÏìÂğ£¿
     if cap.isOpened():
-        print("camera is on\n")
+        print("Camera is on\n")
         show_video(cap)
     else:
-        print("fail to open camera\n")
+        print("Fail to open camera\n")
 
 def show_video(cap):
     while 1:
         ret,frame = cap.read()
         if ret:
             # time.clock()
-            Image(frame)
-            #cv2.waitKey(60)
-            if cv2.waitKey(20) & 0xff == ord('q'): break
+            cut_image(frame)
+            if cv2.waitKey(10) & 0xff == 27: break #27 °´ESCÍË³ö£¬ord('q')°´QÍË³ö
         else :
-            print("failed\n")
+            print("There is a missing frame\n")
 
+def cut_image(sourceDir):
+
+    # ¶ÁÈ¡Í¼Æ¬
+    img = sourceDir
+    #img_shape = img.shape
+
+    global height #¸Ä½øÔİÊ±Ã»ÓĞÓÃµ½£¬Í¼Æ¬µÄ¸ßºÍ¿í #480 640
+    height = img.shape[0]
+    global width 
+    width = img.shape[1];
+    #print(height,width)
+
+    # »Ò¶È»¯
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # ¸ßË¹Ä£ºı´¦Àí:È¥Ôë
+    blur = cv2.GaussianBlur(gray, (9, 9), 0)
+    # Sobel¼ÆËãXY·½ÏòÌİ¶È
+    gradX = cv2.Sobel(blur, ddepth=cv2.CV_32F, dx=1, dy=0)
+    gradY = cv2.Sobel(blur, ddepth=cv2.CV_32F, dx=0, dy=1)
+    # ¼ÆËãÌİ¶È²î
+    gradient = cv2.subtract(gradX, gradY)
+    #¾ø¶ÔÖµ
+    gradient = cv2.convertScaleAbs(gradient)
+    #¸ßË¹Ä£ºı´¦Àí£ºÈ¥Ôë
+    blured = cv2.GaussianBlur(gradient, (9, 9), 0)
+
+    # ¶şÖµ»¯ #¶şÖµ»¯µÄÍ¼ÏñºÍ·ÇÊÖµÄÍ¼ÏñÏà½»
+    _ , dst = cv2.threshold(blured, 20, 255, cv2.THRESH_BINARY) #30Îª·Ö½ç #¸Ä½øĞèÒªÕÒ³ö¶şÖµãĞÖµ¶àÉÙÊ±ÄÜÈ¡µÃ×îºÃĞ§¹û
+    cv2.imshow("Dst", dst)#¶şÖµ»¯ºóÍ¼Ïñ
+    
+    mask=minus_hand(img)
+    #cv2.imshow("mask",mask)
+    dst = cv2.bitwise_xor(dst,mask)
+    cv2.imshow("Dst2", dst)#¶şÖµ»¯ºóÍ¼Ïñ
+
+    # ½á¹¹ÔªËØ
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (30,45)) #¸Ä½ø²éÒ»ÏÂÏñËØ 107,76 ÈôÊÇ°ÑÊÖÅÅ³ıÔÚÍâ£¬¾Í¿ÉÒÔ¸ü´óµÄÁ¬Í¨
+    # ĞÎÌ¬Ñ§´¦Àí:ĞÎÌ¬±Õ´¦Àí(¸¯Ê´)
+    closed = cv2.morphologyEx(dst, cv2.MORPH_CLOSE, kernel)
+    #cv2.imshow("Closed", closed)#µÚÒ»´Î±Õ²Ù×÷
+    # ¸¯Ê´ÓëÅòÕÍµü´ú
+    closed = cv2.erode(closed, None, iterations=3)
+    closed = cv2.dilate(closed, None, iterations=3)
+    cv2.imshow("Closed2", closed)#ĞÎÌ¬Ñ§´¦ÀíºóµÄÍ¼Ïñ
+    # »ñÈ¡ÂÖÀª,
+    cnts,he= cv2.findContours(closed.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    #print(len(cnts))
+    try:
+        c = sorted(cnts, key=cv2.contourArea, reverse=True)[0]
+    except:
+        return
+    #¿ò³ö×îĞ¡³¤·½ĞÎ
+    rect = cv2.minAreaRect(c)
+    #print(rect[0])#center of rect
+    cmd = displacement(rect)
+    # print(cmd)
+    box = np.int0(cv2.boxPoints(rect))
+
+    draw_img = cv2.drawContours(img.copy(), [box], -1, (0, 0, 255), 3)
+    cv2.imshow("Box", draw_img)
 
 def displacement(rect):
-	# put the data in a list
+    # put the data in a list
     pub = []
     #pub.extend(rect);print(type(pub));print(pub)
     cmd = []
@@ -113,32 +98,78 @@ def displacement(rect):
             pub.append(item)
     global pub_pre,ret_x,ret_y
     if len(pub_pre):
-        cmd = [a - b for a, b in zip(pub, pub_pre)]
+        cmd = [a - b for a, b in zip(pub, pub_pre)] #¼ÆËãÎ»ÒÆ
         x = cmd[0]
         y = cmd[1]
         ret_x,avg_x = avg_filter(x,ret_x)
         ret_y,avg_y = avg_filter(y,ret_y)
         if (avg_y!=-1)&(avg_x!=-1):
-            cmd_pub = [0,avg_x,avg_y]
+            cmd_pub = [avg_x,avg_y]
             publ(cmd_pub)
             # print (cmd_pub)
     pub_pre = pub
     return cmd
 
+def publ(m_cmd):
+    #move_cmd = getZeroTwist()
+    global height,width
+    #print(m_cmd)
+    distance = 1e-5
+    x=int(m_cmd[0]*100)
+    y=int(m_cmd[1]*100)
+    xi = np.abs(x)
+    #yi = np.abs(y)/xi
+    # print(xi)
+    for i in range(1,101): #¸Ä½ø ·¢²¼µÄÊµÏÖ·½Ê½
+        #xi -=1
+        ma= m_cmd[0]*distance
+        mb = m_cmd[1]*distance
+        #print(ma,mb)
+        #move_cmd.linear.x = np.sign(x)*distance
+        #move_cmd.linear.y = yi*np.sign(y)*distance
+        # print(move_cmd.linear.x)
+        # print(move_cmd.linear.y)
+        #vel_pub.publish(move_cmd)
+
+def getZeroTwist():
+    #³õÊ¼»¯
+    t = Twist()
+    t.linear.x = 0
+    t.linear.y = 0
+    t.linear.z = 0
+    t.angular.x = 0
+    t.angular.y = 0
+    t.angular.z = 0
+    return t
+
 def avg_filter(x,ret,length=5):
     avg = -1
-    if (len(ret)<length):
+    if (len(ret)<length):        
         ret.append(x)
     else:
         avg = np.sum(ret)/length
         ret.append(x)
         ret = ret[-length:]
+        #print(ret)
     return ret,avg
+
+def minus_hand(img):
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    low_hand = np.array([0, 40, 0])#np.array([9, 40, 0])
+    high_hand = np.array([43, 255, 255])#np.array([43, 255, 255])
+    mask = cv2.inRange(hsv, low_hand, high_hand)
+
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    dst = cv2.bitwise_xor(gray,mask)
+    cv2.imshow("test",dst)
+
+    return mask
 
 
 #vel_pub = rospy.Publisher('/cmd/Twist', Twist, queue_size=1)
-#rospy.init_node('cmd_node') #åˆå§‹åŒ–èŠ‚ç‚¹ cmd_node
+#rospy.init_node('cmd_node') #³õÊ¼»¯½Úµã cmd_node
 
+height = 0;width = 0
 pub_pre = [] #
 ret_x = []
 ret_y = []

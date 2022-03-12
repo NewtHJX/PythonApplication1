@@ -13,7 +13,7 @@ def test1():
 
 def test2():
     #图片的各种参数
-    imageDir = "image.jpg"
+    imageDir = "image4.jpg"
     src = cv2.imread(imageDir,1)
     cv2.imshow("image",src)
     print(type(src))#<class 'numpy.ndarray'>
@@ -45,6 +45,6 @@ def test3():
 
 
 #test1();
-#test2();
-test3();
+test2();
+#test3();
 

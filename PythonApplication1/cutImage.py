@@ -59,7 +59,8 @@ def Image(sourceDir):
 	pause()
 
 	# 滑动窗口
-	kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (107, 76))
+	kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (200,200));print(kernel) #1280,960
+	
 	# 形态学处理:形态闭处理(腐蚀)
 	closed = cv2.morphologyEx(dst, cv2.MORPH_CLOSE, kernel)
 
@@ -97,7 +98,7 @@ def Image(sourceDir):
 	#cv2.waitKey(0)
 
 
-sourceDir = "image3.jpg"
+sourceDir = "image5.jpg"
 Image(sourceDir)
 #print("image:")
 #sourceDir = "image.jpg"
