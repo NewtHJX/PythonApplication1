@@ -94,11 +94,11 @@ def Image(sourceDir):
 
 	draw_img = cv2.drawContours(img.copy(), [c], -1, (0, 0, 255), 3)
 	cv2.imshow("Box", draw_img)
-	cv2.imwrite('image_test.png', draw_img)
+	cv2.imwrite('image_test6.png', draw_img)
 	#cv2.waitKey(0)
 
 
-sourceDir = "image5.jpg"
+sourceDir = "image1.jpg"
 Image(sourceDir)
 #print("image:")
 #sourceDir = "image.jpg"

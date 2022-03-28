@@ -31,6 +31,7 @@ def test3():
     a_tuple = ('abc',666,'hjx');print(a_tuple);print(type(a_tuple[1]))
     a_list = list(a_tuple);print(a_list)
     a_range = range(1,10,2);print(a_range)
+    b_range = range(10);print(b_range)
     b_list = list(a_range);print(b_list)
     b_tuple = tuple(range(1,20,3));print(b_tuple)
     a_list.append(a_tuple);print(a_list);print(type(a_list))
@@ -45,6 +46,6 @@ def test3():
 
 
 #test1();
-test2();
-#test3();
+#test2();
+test3();
 
