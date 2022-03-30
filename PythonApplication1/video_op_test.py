@@ -96,10 +96,10 @@ def cut_image(sourceDir,depth_image):
     _ , dst = cv2.threshold(blured, 20, 255, cv2.THRESH_BINARY) #30为分界 #改进需要找出二值阈值多少时能取得最好效果
     #cv2.imshow("Dst", dst)#二值化后图像
     
-    #mask=minus_hand(img) #除去手后的图像
-    ###cv2.imshow("mask",mask)
-    #dst = cv2.bitwise_and(dst,mask)
-    ##cv2.imshow("Dst2", dst)#二值化后图像
+    mask=minus_hand(img) #除去手后的图像
+    ##cv2.imshow("mask",mask)
+    dst = cv2.bitwise_and(dst,mask)
+    #cv2.imshow("Dst2", dst)#二值化后图像
 
     # 结构元素
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (45,67)) #改进查一下像素 107,76 若是把手排除在外，就可以更大的连通 30,45
@@ -146,7 +146,7 @@ def displacement(rect,depth_image):
         pub.append(int(depth_image[int(pub[0]),int(pub[1])]))
     except:
         pub.append(pub_pre[5])
-    #print(pub)
+    print(pub)
     
     if len(pub_pre):
         cmd = [a - b for a, b in zip(pub, pub_pre)] #计算位移

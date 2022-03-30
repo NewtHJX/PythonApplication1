@@ -6,6 +6,7 @@ import os
 from matplotlib import pyplot as plt
 
 def rgbd():
+    #创建一个管道
     pipeline = rs.pipeline()
 
     #Create a config并配置要流​​式传输的管道
@@ -54,8 +55,6 @@ def rgbd():
 
             depth_image = np.asanyarray(aligned_depth_frame.get_data())
             color_image = np.asanyarray(color_frame.get_data())
-
-            return color_image,depth_image #从这里返回
 
 
             depth_mapped_image = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
@@ -124,5 +123,5 @@ def getRGBD():
     return color_image,depth_image #从这里返回
 
 
-getRGBD()
-#rgbd()
+#getRGBD()
+rgbd()
