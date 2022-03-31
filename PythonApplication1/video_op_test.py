@@ -1,7 +1,7 @@
 ﻿import numpy as np
 import cv2
 import time
-from rgbdtest import rgbd
+#from rgbdtest import rgbd
 import pyrealsense2 as rs
 
 #from numpy.core.arrayprint import printoptions
@@ -45,7 +45,7 @@ def cap_rgbd():
     align_to = rs.stream.color
     align = rs.align(align_to)
 
-    while 1:
+    while True:
         frames = pipeline.wait_for_frames()
 
         aligned_frames = align.process(frames)
@@ -72,10 +72,10 @@ def cut_image(sourceDir,depth_image):
     img = sourceDir
     #img_shape = img.shape
 
-    global height #改进暂时没有用到，图片的高和宽 #480 640
-    height = img.shape[0]
-    global width 
-    width = img.shape[1];
+    #global height #改进暂时没有用到，图片的高和宽 #480 640
+    #height = img.shape[0]
+    #global width 
+    #width = img.shape[1];
     #print(height,width)
 
     # 灰度化
@@ -97,10 +97,11 @@ def cut_image(sourceDir,depth_image):
     #cv2.imshow("Dst", dst)#二值化后图像
     
     mask=minus_hand(img) #除去手后的图像
-    ##cv2.imshow("mask",mask)
+    cv2.imshow("mask",mask)
     dst = cv2.bitwise_and(dst,mask)
-    #cv2.imshow("Dst2", dst)#二值化后图像
+    cv2.imshow("Dst2", dst)#二值化后图像
 
+    #print('test')
     # 结构元素
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (45,67)) #改进查一下像素 107,76 若是把手排除在外，就可以更大的连通 30,45
     # 形态学处理:形态闭处理(腐蚀)
@@ -143,9 +144,9 @@ def displacement(rect,depth_image):
     #print(pub)
     global pub_pre,ret_x,ret_y,ret_z
     try:
-        pub.append(int(depth_image[int(pub[0]),int(pub[1])]))
+        pub.append(int(depth_image[int(pub[0]),int(pub[1])]))#
     except:
-        pub.append(pub_pre[5])
+        pub.append(0)#这里改一下？
     print(pub)
     
     if len(pub_pre):

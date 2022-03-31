@@ -4,6 +4,7 @@ import cv2
 import time
 import os
 from matplotlib import pyplot as plt
+from cutImage import cutImage
 
 
 def initGetRGBDFrame():
@@ -15,7 +16,7 @@ def initGetRGBDFrame():
     config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)#1920，1080
     #开始流式传输
     profile = pipeline.start(config)
-    #获取深度传感器的深度标尺
+    #获取深度传感器的深度标尺 #已经测量
     #depth_sensor = profile.get_device().first_depth_sensor()
     #depth_scale = depth_sensor.get_depth_scale()
     #print("Depth Scale is: " , depth_scale)
@@ -44,7 +45,11 @@ def getRGBDFrame(pipeline,align):
 
     return color_image,depth_image
 
-def removeBackground(color_image,depth_image,clipping_distance):
+def removeBackground(color_image,depth_image, clipping_distance_in_meters):
+    # 我们将删除对象的背景
+    #  clipping_distance_in_meters meters away
+    depth_scale=0.0002500000118743628
+    clipping_distance = clipping_distance_in_meters / depth_scale
     #remove background - 将clips_distance以外的像素设置为灰色
     grey_color = 153
     depth_image_3d = np.dstack((depth_image,depth_image,depth_image)) #depth image is 1 channel, color is 3 channels
@@ -55,10 +60,10 @@ def removeBackground(color_image,depth_image,clipping_distance):
 
 
 if __name__ == "__main__":
+    plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
+    plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
     #初始化
-    pipeline,align=initGetRGBDFrame()
-    #获取彩色图和深度图
-    color_image,depth_image=getRGBDFrame(pipeline,align)
+    pipeline,align = initGetRGBDFrame()
     #显示彩色图和深度图
     #plt.subplot(121),plt.imshow(color_image)
     #plt.title("Color"),plt.xticks([]),plt.yticks([]) 
@@ -66,22 +71,27 @@ if __name__ == "__main__":
     #plt.title("Depth"),plt.xticks([]),plt.yticks([]) 
     #plt.show()
 
-    # 我们将删除对象的背景
-    #  clipping_distance_in_meters meters away
-    depth_scale=0.0002500000118743628
-    clipping_distance_in_meters = 1 #1 meter
-    clipping_distance = clipping_distance_in_meters / depth_scale
-    #删除背景
-    bg_removed=removeBackground(color_image,depth_image,clipping_distance)
+    #对彩色图和深度图进行处理
+    while True:
+        #获取彩色图和深度图
+        color_image,depth_image = getRGBDFrame(pipeline,align)
+        cutImage(color_image,depth_image)
+        cv2.waitKey(10)
+    
 
-    plt.subplot(231),plt.imshow(color_image)
-    plt.title("Depth"),plt.xticks([]),plt.yticks([]) 
-    plt.subplot(232),plt.imshow(bg_removed)
-    plt.title("RmBackground"),plt.xticks([]),plt.yticks([])
-    depth_mapped_image = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
-    plt.subplot(233),plt.imshow(depth_mapped_image)
-    plt.title("Depth"),plt.xticks([]),plt.yticks([]) 
-    plt.show()
+    ##删除clipping_distance_in_meters外的背景
+    #clipping_distance_in_meters = 1 #可以修改识别的距离 1 meter
+    ##删除背景
+    #bg_removed=removeBackground(color_image,depth_image, clipping_distance_in_meters )
+
+    #plt.subplot(231),plt.imshow(color_image)
+    #plt.title("Depth"),plt.xticks([]),plt.yticks([]) 
+    #plt.subplot(232),plt.imshow(bg_removed)
+    #plt.title("RmBackground"),plt.xticks([]),plt.yticks([])
+    #depth_mapped_image = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+    #plt.subplot(233),plt.imshow(depth_mapped_image)
+    #plt.title("Depth"),plt.xticks([]),plt.yticks([]) 
+    #plt.show()
 
     #depth_mapped_image = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
     #cv2.imshow("live", np.hstack((color_image, depth_mapped_image)))
