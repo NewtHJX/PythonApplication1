@@ -45,18 +45,6 @@ def getRGBDFrame(pipeline,align):
 
     return color_image,depth_image
 
-def removeBackground(color_image,depth_image, clipping_distance_in_meters):
-    # 我们将删除对象的背景
-    #  clipping_distance_in_meters meters away
-    depth_scale=0.0002500000118743628
-    clipping_distance = clipping_distance_in_meters / depth_scale
-    #remove background - 将clips_distance以外的像素设置为灰色
-    grey_color = 153
-    depth_image_3d = np.dstack((depth_image,depth_image,depth_image)) #depth image is 1 channel, color is 3 channels
-    bg_removed = np.where((depth_image_3d > clipping_distance) | (depth_image_3d <= 0), grey_color, color_image)
-    
-    return bg_removed
-
 
 
 if __name__ == "__main__":
@@ -64,12 +52,6 @@ if __name__ == "__main__":
     plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
     #初始化
     pipeline,align = initGetRGBDFrame()
-    #显示彩色图和深度图
-    #plt.subplot(121),plt.imshow(color_image)
-    #plt.title("Color"),plt.xticks([]),plt.yticks([]) 
-    #plt.subplot(122),plt.imshow(depth_image)
-    #plt.title("Depth"),plt.xticks([]),plt.yticks([]) 
-    #plt.show()
 
     #对彩色图和深度图进行处理
     while True:

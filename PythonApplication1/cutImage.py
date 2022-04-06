@@ -28,9 +28,9 @@ def cutImage(color_image, depth_image):
 	#img = color_image
 	#img_no_change=img
 
-	#plt.subplot(111),plt.imshow(depth_image)
-	#plt.title("Depth"),plt.xticks([]),plt.yticks([])
-	#plt.show()
+	plt.subplot(111),plt.imshow(depth_image)
+	plt.title("Depth"),plt.xticks([]),plt.yticks([])
+	plt.show()
 
 	#cv2.imshow("depth_image",depth_image)
 	#pause()
@@ -64,6 +64,7 @@ def cutImage(color_image, depth_image):
 	clipping_distance_in_meters = 1 #可以修改识别的距离 1 meter
 	#删除背景
 	bg_removed_minus_hand = removeBackground(color_image_minus_hand,depth_image, clipping_distance_in_meters )
+	#cv2.imwrite("hand_removed0.png", bg_removed_minus_hand )
 
 	cv2.imshow("Bg_removed_minus_hand", bg_removed_minus_hand)#二值化后图像
 	#pause()
@@ -87,8 +88,6 @@ def cutImage(color_image, depth_image):
 
 	#cv2.imshow('gradient',gradY)
 	#pause()
-
-	#gradient = cv2.subtract(gradX,gradY) #计算梯度差
 		
 	# 计算梯度差
 	gradient = cv2.subtract(gradX, gradY)
@@ -161,8 +160,8 @@ def minus_hand(img):
 	#RGB转换到HSV空间
 	hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 	#手的颜色范围
-	low_hand = np.array([9, 40, 0])#np.array([9, 40, 0])
-	high_hand = np.array([50, 255, 255])#np.array([43, 255, 255])
+	low_hand = np.array([9, 20, 0])#np.array([9, 40, 0])
+	high_hand = np.array([70, 255, 255])#np.array([43, 255, 255])
 	#生成掩膜
 	mask = cv2.inRange(hsv, low_hand, high_hand)
 	#plt.subplot(221),plt.imshow(hsv)
@@ -176,9 +175,10 @@ def minus_hand(img):
 
 
 if __name__ == "__main__" :
-	color_image = cv2.imread("0.png")
-	depth_image = np.load("./0.npy")
+	color_image = cv2.imread("7.png")
+	depth_image = np.load("./7.npy")
 	cutImage( color_image, depth_image)
+	cv2.waitKey(0)
 
 
 

@@ -14,6 +14,9 @@ def rgbd():
     config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
     config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
+    #config.enable_stream(rs.stream.depth, 1024, 768, rs.format.z16, 30)
+    #config.enable_stream(rs.stream.color, 1920, 1080, rs.format.bgr8, 30)
+
     profile = pipeline.start(config)
 
     depth_sensor = profile.get_device().first_depth_sensor()
@@ -68,7 +71,7 @@ def rgbd():
             #plt.show()
 
             cv2.imshow("live", np.hstack((color_image, depth_mapped_image)))
-            key = cv2.waitKey(30)
+            key = cv2.waitKey(1)
 
             # s 保存图片
             if key & 0xFF == ord('s'):
